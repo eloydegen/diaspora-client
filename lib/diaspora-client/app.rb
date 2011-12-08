@@ -72,11 +72,11 @@ module DiasporaClient
       DiasporaClient.setup_faraday
 
       begin
-        redirect client.web_server.authorize_url(
+        redirect client.authorize_url(client.auth_code.authorize_params.merge(
           :redirect_uri => redirect_uri,
           :scope => 'profile,AS_photo:post',
           :uid => uid
-        )
+        ))
       rescue Exception => e
         redirect_url = back.to_s
         if defined?(Rails)
@@ -94,12 +94,13 @@ module DiasporaClient
     get '/callback' do
       if !params["error"]
 
-        access_token = client.web_server.get_access_token(params[:code], :redirect_uri => redirect_uri)
+        access_token = client.auth_code.get_token(params[:code],
+                       pod.build_register_body.merge(:redirect_uri => redirect_uri))
 
-        user_json = JSON.parse(access_token.get('/api/v0/me'))
+        user_json = JSON.parse(access_token.get('/api/v0/me').body)
 
-        url = Addressable::URI.parse(client.web_server.authorize_url).normalized_host
-        if port = Addressable::URI.parse(client.web_server.authorize_url).normalized_port
+        url = Addressable::URI.parse(client.auth_code.authorize_url).normalized_host
+        if port = Addressable::URI.parse(client.auth_code.authorize_url).normalized_port
           url += ":#{port}"
         end
 
