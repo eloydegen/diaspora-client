@@ -9,12 +9,7 @@ module DiasporaClient
   autoload :App,            File.join('diaspora-client', 'app')
   autoload :AccessToken,    File.join('diaspora-client', 'access_token')
   autoload :ResourceServer, File.join('diaspora-client', 'resource_server')
-
-
-  PROFILE = "profile"
-  PHOTOS = "photos"
-  READ = "read"
-  WRITE = "write"
+  autoload :Permissions,    File.join('diaspora-client', 'permissions')
 
 
   # Sets setter field(s) for the module.
@@ -183,7 +178,7 @@ HELP
     app_name = (defined?(Rails)) ? "#{Rails.application.class.parent_name}." : ""
     app_root = (defined?(Rails)) ? "#{Rails.root}" : ""
 
-    @permissions = {}
+    @permissions = Permissions.new
     @manifest_fields = {}
 
     @private_key_path = "#{app_root}/config/#{app_name}private.pem"
@@ -216,23 +211,33 @@ HELP
 
   # Defines the permissions the applicaiton is attempting to access.
   #
+  #
+  # Available types:
+  # - :posts - Read/delete/create/hide status messages, reshares and photos, read streams, read/update notifications
+  # - :as_photo - Read/create Activity Streams photos
+  # - :profile - Read/write profile and user settings
+  # - :comments - Read/create/delete comments
+  # - :likes - Read/create/delete likes
+  # - :aspects - Read/create/update/delete aspects, read/create/delete contacts (contacts require :people too)
+  # - :people - Read profiles, read/create/delete contacts (contacts require :aspects too)
+  # - :conversations - Read/create/delete conversations and messages
+  #
+  #
   # @example
   #  permission(:profile, :read, "Chubbi.es wants to view your profile so that it can show it to other users.")
   #
+  #
   # @param [Symbol] type The type of content to be accessed
-  # @param [Symbol] access Read/write access of the specified type
-  # @param [String] description Human readable description of what the permission will be used for
+  # @param [Symbol] access_type Read/write access of the specified type
   # @return [void]
-  def self.permission(type, access, description)
-    @permissions[type] = {:type => "DiasporaClient::#{type.to_s.upcase}".constantize,
-                          :access => "DiasporaClient::#{access.to_s.upcase}".constantize,
-                          :description => description}
+  def self.permission(type, access_type)
+    @permissions.set(type, access_type)
   end
 
   # Generates the manifest content used in {.package_manifest}.
   # @return [Hash]
   def self.generate_manifest
-    @manifest_fields.merge(:permissions => @permissions,
+    @manifest_fields.merge(:permissions => @permissions.manifest_array,
                            :application_base_url => self.application_base_url.to_s)
   end
   

@@ -74,7 +74,7 @@ module DiasporaClient
       begin
         redirect client.authorize_url(client.auth_code.authorize_params.merge(
           :redirect_uri => redirect_uri,
-          :scope => 'profile,AS_photo:post',
+          :scope => DiasporaClient.permissions.all_scopes_string,
           :uid => uid
         ))
       rescue Exception => e
