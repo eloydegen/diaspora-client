@@ -28,14 +28,10 @@ module DiasporaClient
       @permissions.collect { |type, access_type| {:type => type, :access => access_type} }
     end
     
-    def all_scopes_string
-      @permissions.keys.join(",")
-    end
-    
     private
     
     def available_types
-      [:posts,:as_photos, :comments, :likes, :aspects, :profile, :people]
+      [:posts,:as_photos, :comments, :likes, :aspects, :profile, :people, :tags]
     end
     
     def available_access_types
