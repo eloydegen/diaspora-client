@@ -83,23 +83,32 @@ describe DiasporaClient do
     end
 
 
-    it 'sets the permission requests and descriptions' do
+    it 'sets the permission request' do
       DiasporaClient.config do |d|
-       d.permission(:profile, :read, "Chubbi.es wants to view your profile so that it can show it to other users.")
-       d.permission(:photos, :write, "Chubbi.es wants to write to your photos to share your findings with your contacts.")
+       d.permission(:profile, :read)
+       d.permission(:as_photos, :write)
       end
 
-      pr = DiasporaClient.permissions[:profile]
-      pr[:access].should == DiasporaClient::READ
-      pr[:type].should == DiasporaClient::PROFILE
-      pr[:description].should == "Chubbi.es wants to view your profile so that it can show it to other users."
-
-      pr = DiasporaClient.permissions[:photos]
-      pr[:access].should == DiasporaClient::WRITE
-      pr[:type].should == DiasporaClient::PHOTOS
-      pr[:description].should == "Chubbi.es wants to write to your photos to share your findings with your contacts."
+      pr = DiasporaClient.permissions[:profile].should == :read
+      pr = DiasporaClient.permissions[:as_photos].should == :write
     end
 
+    it 'raises on wrong permission type' do
+      expect {
+        DiasporaClient.config do |d|
+          d.permission(:everything, :read)
+        end
+      }.to raise_error DiasporaClient::WrongPermissionType
+    end
+    
+    it 'raises on wrong access type' do
+      expect {
+        DiasporaClient.config do |d|
+          d.permission(:posts, :party)
+        end
+      }.to raise_error DiasporaClient::WrongPermissionAccessType
+    end
+ 
     it 'sets account_class and account_creation_method' do
       DiasporaClient.account_class.should == nil
       DiasporaClient.account_creation_method.should == :find_or_create_with_diaspora
@@ -252,8 +261,8 @@ describe DiasporaClient do
 
         d.manifest_field(:permissions_overview, "Chubbi.es wants to post photos to your stream.")
 
-        d.permission(:profile, :read, "Chubbi.es wants to view your profile so that it can show it to other users.")
-        d.permission(:photos, :write, "Chubbi.es wants to write to your photos to share your findings with your contacts.")
+        d.permission(:profile, :read)
+        d.permission(:as_photos, :write)
       end
     end
 
@@ -295,9 +304,9 @@ describe DiasporaClient do
         end
 
         it 'has all permission fields' do
-          jwt_permissions = JWT.decode(@packaged_manifest_jwt, @pub_key)["permissions"].symbolize_keys
-          jwt_permissions.keys.each do |key|
-            jwt_permissions[key].symbolize_keys.should == DiasporaClient.permissions[key]
+          jwt_permissions = JWT.decode(@packaged_manifest_jwt, @pub_key)["permissions"]
+          jwt_permissions.each do |permission|
+            permission["access"].to_sym.should == DiasporaClient.permissions[permission["type"].to_sym]
           end
         end
       end
