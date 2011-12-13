@@ -10,6 +10,7 @@ module DiasporaClient
   autoload :AccessToken,    File.join('diaspora-client', 'access_token')
   autoload :ResourceServer, File.join('diaspora-client', 'resource_server')
   autoload :Permissions,    File.join('diaspora-client', 'permissions')
+  autoload :Api,            File.join('diaspora-client', 'api')
 
 
   # Sets setter field(s) for the module.
@@ -269,6 +270,15 @@ HELP
   # @return [void]
   def self.set_test_defaults
     @application_base_url ||= "example.com"
+  end
+  
+  # Provides a shorthand for user.access_token.token
+  #
+  # @param [User] user the user
+  # @param [Hash] opts options: :version => :v0
+  # @return [DiasporaClient::Api] wrapper around access token to catch errors and return them and parse the json respond
+  def self.api(user, opts={})
+    Api.new(user, opts)
   end
 
   private

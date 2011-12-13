@@ -65,6 +65,11 @@ module DiasporaClient
       request.env["warden"].set_user(user, :scope => :user, :store => true)
     end
 
+    def get_uid(access_token)
+      @user_json ||= JSON.parse(access_token.get('/api/v0/me').body)
+      @user_json['uid']
+    end
+
     # @return [void]
     get '/' do
 
@@ -81,7 +86,7 @@ module DiasporaClient
         if defined?(Rails)
           flash_class = ActionDispatch::Flash
           flash = request.env["action_dispatch.request.flash_hash"] ||= flash_class::FlashHash.new
-          flash.alert = e.message
+          flash.alert = e.message[0..2000]
         else
           redirect_url << "?diaspora-client-error=#{URI.escape(e.message[0..800])}"
         end
@@ -92,38 +97,55 @@ module DiasporaClient
     # @return [void]
     get '/callback' do
       if !params["error"]
+        begin
+          access_token = client.auth_code.get_token(params[:code],
+                        pod.build_register_body.merge(:redirect_uri => redirect_uri))
 
-        access_token = client.auth_code.get_token(params[:code],
-                       pod.build_register_body.merge(:redirect_uri => redirect_uri))
+          url = Addressable::URI.parse(client.auth_code.authorize_url).normalized_host
+          if port = Addressable::URI.parse(client.auth_code.authorize_url).normalized_port
+            url += ":#{port}"
+          end
 
-        user_json = JSON.parse(access_token.get('/api/v0/me').body)
+          self.current_user ||= create_account(:diaspora_id => get_uid(access_token) + "@" + url)
 
-        url = Addressable::URI.parse(client.auth_code.authorize_url).normalized_host
-        if port = Addressable::URI.parse(client.auth_code.authorize_url).normalized_port
-          url += ":#{port}"
+          if at = current_user.access_token
+            at.destroy
+            current_user.access_token = nil
+          end
+
+          current_user.create_access_token(
+            :uid => get_uid(access_token),
+            :resource_server_id => pod.id,
+            :access_token => access_token.token,
+            :refresh_token => access_token.refresh_token,
+            :expires_at => access_token.expires_at
+          )
+          redirect after_oauth_redirect_path
+        rescue OAuth2::Error => e
+          if e.respond_to?(:response)
+            if e.response.status == 401
+              message = "Access denied"
+            else
+              message = e.response.body[0..2000]
+            end
+          else
+            message = e.message[0..2000]
+          end
+          
+          redirect_url = after_oauth_redirect_path
+          if defined?(Rails)
+            flash_class = ActionDispatch::Flash
+            flash = request.env["action_dispatch.request.flash_hash"] ||= flash_class::FlashHash.new
+            flash.alert = message
+          else
+            redirect_url << "?diaspora-client-error=#{URI.escape(message[0..800])}"
+          end
+          redirect redirect_url
         end
-
-        self.current_user ||= create_account(:diaspora_id => user_json['uid'] + "@" + url)
-
-        if at = current_user.access_token
-          at.destroy
-          current_user.access_token = nil
-        end
-
-        current_user.create_access_token(
-          :uid => user_json["uid"],
-          :resource_server_id => pod.id,
-          :access_token => access_token.token,
-          :refresh_token => access_token.refresh_token,
-          :expires_at => access_token.expires_at
-        )
-
       elsif params["error"] == "invalid_client"
         ResourceServer.register(diaspora_id.split('@')[1])
         redirect "/?diaspora_id=#{diaspora_id}"
       end
-
-      redirect after_oauth_redirect_path
     end
 
     # Destroy the current user's access token and redirect.
