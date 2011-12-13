@@ -191,11 +191,18 @@ describe DiasporaClient do
     end
 
     it 'uses net:http if not in a reactor and 1.9.2' do
-      EM.stub(:reactor_running?).and_return(true)
+      if defined?(EM)
+        EM.stub(:reactor_running?).and_return(true)
+      end
+      
       DiasporaClient.setup_faraday
 
       conn = Faraday.default_connection
-      conn.builder.handlers.should include(Faraday::Adapter::EMSynchrony)
+      if defined?(EM)
+        conn.builder.handlers.should include(Faraday::Adapter::EMSynchrony)
+      else
+        conn.builder.handlers.should include Faraday::Adapter::NetHttp
+      end
     end
   end
 

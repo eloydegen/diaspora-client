@@ -20,6 +20,7 @@ group :development do
   gem "jeweler", "~> 1.6.2"
   gem "rcov", ">= 0"
   gem 'ruby-debug19', :platform => :mri_19
+  gem "ruby-debug", :platform => :mri_18
   gem 'yard'
 end
 

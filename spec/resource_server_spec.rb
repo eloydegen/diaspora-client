@@ -18,7 +18,7 @@ describe DiasporaClient::ResourceServer do
       response.stub!(:success?).and_return(true)
 
       body = {:a => 'b'}
-      ResourceServer.any_instance.should_receive(:build_register_body).and_return(body)
+      DiasporaClient::ResourceServer.any_instance.should_receive(:build_register_body).and_return(body)
 
       conn = mock()
       conn.should_receive(:post).
@@ -26,7 +26,7 @@ describe DiasporaClient::ResourceServer do
         and_return(response)
       Faraday.stub(:default_connection).and_return(conn)
 
-      ResourceServer.register(@host)
+      DiasporaClient::ResourceServer.register(@host)
     end
 
     it 'raises if the connection response is not acceptable' do
@@ -37,14 +37,14 @@ describe DiasporaClient::ResourceServer do
 
 
       proc {
-        ResourceServer.register(@host)
+        DiasporaClient::ResourceServer.register(@host)
       }.should raise_error DiasporaClient::RegistrationError
     end
   end
 
   context 'uris' do
       before do
-        @res = ResourceServer.new(:host => 'pod.pod')
+        @res = DiasporaClient::ResourceServer.new(:host => 'pod.pod')
       end
     describe '#full_host' do
       it 'returns the https url by default' do
@@ -78,7 +78,7 @@ describe DiasporaClient::ResourceServer do
 
   describe '#build_register_body' do
     before do
-      @resource = ResourceServer.new(:host => @host)
+      @resource = DiasporaClient::ResourceServer.new(:host => @host)
     end
     it 'sets the type' do
       @resource.build_register_body[:type].should == :client_associate
@@ -99,7 +99,7 @@ describe DiasporaClient::ResourceServer do
 
   describe '#signable_string' do
     it 'returns a signable string' do
-      pod = ResourceServer.new(:host => @host)
+      pod = DiasporaClient::ResourceServer.new(:host => @host)
       ActiveSupport::SecureRandom.stub!(:base64).and_return("nonce")
       signable_string = [DiasporaClient.application_base_url, "https://#{@host}:443", @time.to_i, "nonce"].join(';')
       pod.signable_string.should == signable_string
