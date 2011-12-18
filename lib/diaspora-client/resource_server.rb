@@ -12,7 +12,7 @@ module DiasporaClient
     # @return [ResourceServer] The new model of the server located at host.
     def self.register(host)
       pod = self.find_or_initialize_by_host(host)
-      response = Faraday.post(pod.token_endpoint, pod.build_register_body)
+      response = Faraday.post(pod.register_endpoint, pod.build_register_body)
 
       unless(response.present? && response.success?)
         message = "Failed to connect to Diaspora server: "
@@ -62,10 +62,17 @@ module DiasporaClient
       a
     end
 
-    # @return [String] The registration endpoint of this Diaspora pod.
+    # @return [String] The access and refresh token endpoint of the Diaspora pod
     def token_endpoint
       url = self.full_host
       url.path = '/oauth/token'
+      url.to_s
+    end
+    
+    # @return [String] The registration endpoint of the Diaspora pod
+    def register_endpoint
+      url = self.full_host
+      url.path = 'oauth/register'
       url.to_s
     end
 

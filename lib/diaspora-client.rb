@@ -194,6 +194,7 @@ HELP
 
     @account_class = nil
     @account_creation_method = :find_or_create_with_diaspora
+    @account_find_method = :find_by_diaspora_id
   end
 
   # Defines a field to be placed in the application's manifest.

@@ -47,6 +47,12 @@ module DiasporaClient
       DiasporaClient.account_class.send(DiasporaClient.account_creation_method, hash)
     end
 
+    # @param diaspora_id [String] the connecting user's diaspora id
+    # @return [ActiveRecord::Base] A created and persisted user account which an access token can be attached to.
+    def find_account(diaspora_id)
+      DiasporaClient.account_class.send(DiasporaClient.account_find_method, diaspora_id)
+    end
+
     # @return [String] The URL to hit after retreiving an access token from a Diaspora server.
     # @see #redirect_path
     def redirect_uri
@@ -77,10 +83,10 @@ module DiasporaClient
       DiasporaClient.setup_faraday
 
       begin
-        redirect client.authorize_url(client.auth_code.authorize_params.merge(
+        redirect client.auth_code.authorize_url(
           :redirect_uri => redirect_uri,
           :uid => uid
-        ))
+        )
       rescue Exception => e
         redirect_url = back.to_s
         if defined?(Rails)
@@ -96,10 +102,9 @@ module DiasporaClient
 
     # @return [void]
     get '/callback' do
-      if !params["error"]
+      if !params["error"] && params["diaspora_id"] && params[:code]
         begin
-          access_token = client.auth_code.get_token(params[:code],
-                        pod.build_register_body.merge(:redirect_uri => redirect_uri))
+          access_token = client.auth_code.get_token(params[:code], :redirect_uri => redirect_uri)
 
           url = Addressable::URI.parse(client.auth_code.authorize_url).normalized_host
           if port = Addressable::URI.parse(client.auth_code.authorize_url).normalized_port
@@ -145,6 +150,10 @@ module DiasporaClient
       elsif params["error"] == "invalid_client"
         ResourceServer.register(diaspora_id.split('@')[1])
         redirect "/?diaspora_id=#{diaspora_id}"
+      elsif params["error"] == "access_denied"
+        redirect after_oauth_redirect_path+"?diaspora-client-error=access_denied"
+      else
+        redirect after_oauth_redirect_path+"?diaspora-client-error=invalid_response"
       end
     end
 

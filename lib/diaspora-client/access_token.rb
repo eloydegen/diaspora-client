@@ -20,5 +20,11 @@ module DiasporaClient
     def expires_in
       (expires_at - Time.now.to_i).to_i
     end
+    
+    # Expires the token
+    def expire!
+      self.expires_at = Time.now.to_i-60
+      self.save
+    end
   end
 end
