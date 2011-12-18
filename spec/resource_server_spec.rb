@@ -11,7 +11,7 @@ describe DiasporaClient::ResourceServer do
   end
 
   describe '.register' do
-    it 'posts to the token endpoint' do
+    it 'posts to the register endpoint' do
       response = mock()
       resp_str = {:client_id => "aofosdjfg", :client_secret => "aosfjosdigh"}.to_json.to_s
       response.stub!(:body).and_return(resp_str)
@@ -22,7 +22,7 @@ describe DiasporaClient::ResourceServer do
 
       conn = mock()
       conn.should_receive(:post).
-        with("https://#{@host}:443/oauth/token", body).
+        with("https://#{@host}:443/oauth/register", body).
         and_return(response)
       Faraday.stub(:default_connection).and_return(conn)
 
@@ -66,6 +66,12 @@ describe DiasporaClient::ResourceServer do
     describe '#token_endpoint' do
       it 'retruns the default route' do
         @res.token_endpoint.should include(@res.full_host + "/oauth/token")
+      end
+    end
+
+    describe '#register_endpoint' do
+      it 'retruns the default route' do
+        @res.register_endpoint.should include(@res.full_host + "/oauth/register")
       end
     end
 
