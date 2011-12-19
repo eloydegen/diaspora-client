@@ -224,6 +224,7 @@ HELP
   # - :people - Read profiles, read/create/delete contacts (contacts require :aspects too)
   # - :conversations - Read/create/delete conversations and messages
   # - :tags - Read/create delete followed tags
+  # - :conversations - Read/create/delete conversations
   #
   #
   # @example

@@ -31,7 +31,7 @@ module DiasporaClient
     private
     
     def available_types
-      [:posts,:as_photos, :comments, :likes, :aspects, :profile, :people, :tags]
+      [:posts,:as_photos, :comments, :likes, :aspects, :profile, :people, :tags, :conversations]
     end
     
     def available_access_types
