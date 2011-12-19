@@ -102,9 +102,9 @@ module DiasporaClient
 
     # @return [void]
     get '/callback' do
-      if !params["error"] && params[:code]
+      if !params["error"] && params["diaspora_id"] && params["code"]
         begin
-          access_token = client.auth_code.get_token(params[:code], :redirect_uri => redirect_uri)
+          access_token = client.auth_code.get_token(params["code"], :redirect_uri => redirect_uri)
 
           url = Addressable::URI.parse(client.auth_code.authorize_url).normalized_host
           if port = Addressable::URI.parse(client.auth_code.authorize_url).normalized_port
