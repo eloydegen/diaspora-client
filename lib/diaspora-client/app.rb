@@ -102,7 +102,7 @@ module DiasporaClient
 
     # @return [void]
     get '/callback' do
-      if !params["error"] && params["diaspora_id"] && params[:code]
+      if !params["error"] && params[:code]
         begin
           access_token = client.auth_code.get_token(params[:code], :redirect_uri => redirect_uri)
 
