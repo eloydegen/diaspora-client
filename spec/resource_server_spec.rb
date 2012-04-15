@@ -100,7 +100,7 @@ describe DiasporaClient::ResourceServer do
   describe '#signable_string' do
     it 'returns a signable string' do
       pod = DiasporaClient::ResourceServer.new(:host => @host)
-      ActiveSupport::SecureRandom.stub!(:base64).and_return("nonce")
+      SecureRandom.stub!(:base64).and_return("nonce")
       signable_string = [DiasporaClient.application_base_url, "https://#{@host}:443", @time.to_i, "nonce"].join(';')
       pod.signable_string.should == signable_string
     end

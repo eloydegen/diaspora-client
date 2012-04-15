@@ -18,7 +18,7 @@ module DiasporaClient
     
     # @return [Integer] Unix time until token experation.
     def expires_in
-      (expires_at - Time.now.to_i)
+      (expires_at - Time.now)
     end
   end
 end

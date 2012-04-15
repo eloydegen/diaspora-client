@@ -49,7 +49,7 @@ module DiasporaClient
       [ DiasporaClient.application_base_url,
         full_host,
         Time.now.to_i,
-        ActiveSupport::SecureRandom.base64(32)
+        SecureRandom.base64(32)
       ].join(';')
     end
 
