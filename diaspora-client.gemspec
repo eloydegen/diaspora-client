@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.authors = ["Diaspora, Inc."]
   s.date = %q{2011-06-09}
   s.description = %q{a gem to help with authentication and communicating with a Diaspora server}
-  s.email = %q{ilya@joindiaspora.com}
+  s.email = %q{maxwell@joindiaspora.com}
   s.extra_rdoc_files = [
     "LICENSE.txt",
     "README.rdoc"

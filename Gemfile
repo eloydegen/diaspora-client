@@ -18,7 +18,6 @@ gem 'rack-fiber_pool', :require => 'rack/fiber_pool', :platform => :mri_19
 group :development do
   gem "bundler", ">= 1.0"
   gem "jeweler", "~> 1.6.2"
-  gem "rcov", ">= 0"
   gem 'ruby-debug19', :platform => :mri_19
   gem "ruby-debug", :platform => :mri_18
   gem 'yard'
