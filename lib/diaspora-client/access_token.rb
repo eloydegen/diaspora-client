@@ -15,10 +15,10 @@ module DiasporaClient
         :adapter => DiasporaClient.which_faraday_adapter?
       )
     end
-    
+
     # @return [Integer] Unix time until token experation.
     def expires_in
-      (expires_at - Time.now)
+      Time.at(expires_at - Time.now)
     end
   end
 end
